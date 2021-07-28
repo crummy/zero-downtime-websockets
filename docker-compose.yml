@@ -1,0 +1,9 @@
+services:
+  server:
+    build: ./server
+    expose:
+      - 4567
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
