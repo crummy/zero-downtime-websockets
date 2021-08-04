@@ -6,22 +6,22 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage
 import org.eclipse.jetty.websocket.api.annotations.WebSocket
 import spark.Spark
-import java.io.IOException
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
+val serverId = Random().nextInt()
 
 fun main() {
-    val id = Random().nextInt()
     val webSocketHandler = WebSocketHandler()
     Spark.webSocket("/websocket", webSocketHandler)
     Spark.staticFiles.location("/web"); // resources folder
     Spark.get("/") { req, res -> res.redirect("/web/index.html") }
-    Spark.get("/id") { req, res -> id }
+    Spark.get("/id") { req, res -> serverId }
     Spark.init()
 
     Runtime.getRuntime().addShutdownHook(object : Thread() {
         override fun run() {
+            Spark.unmap("/websocket")
             webSocketHandler.shutDown()
         }
     })
@@ -34,6 +34,7 @@ class WebSocketHandler {
     @OnWebSocketConnect
     fun connected(session: Session) {
         println("Session connected")
+        session.remote.sendString(toJson("hello"))
         sessions.add(session)
     }
 
@@ -46,12 +47,16 @@ class WebSocketHandler {
     @OnWebSocketMessage
     fun message(session: Session, message: String) {
         println("Got: $message") // Print message
-        session.remote.sendString(message) // and send it back
+        session.remote.sendString(toJson(message)) // and send it back
     }
 
     fun shutDown() {
         for (session in sessions) {
-            session.remote.sendString("reconnect")
+            session.remote.sendString(toJson("reconnect"))
         }
+    }
+
+    fun toJson(message: String): String {
+        return """{"message": "$message", "server": "$serverId"}"""
     }
 }
