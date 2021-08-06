@@ -5,6 +5,8 @@ var ws_protocol = null;
 var ws_hostname = null;
 var ws_port = null;
 var ws_endpoint = null;
+var echo_loop = false;
+document.getElementById("echo_loop").onclick = () => echo_loop = !echo_loop
 
 /**
  * Event handler for clicking on button "Connect"
@@ -51,13 +53,10 @@ function openWSConnection(protocol, hostname, port, endpoint) {
         webSocket.onmessage = function (messageEvent) {
             const wsMsg = JSON.parse(messageEvent.data);
             console.log("WebSocket MESSAGE: ", wsMsg);
-            document.getElementById("incomingMsgOutput").value += "received from " + wsMsg.server + ": " + wsMsg.message + "\n"
+            document.getElementById("incomingMsgOutput").value += wsMsg.server + "/" + wsMsg.time + ": " + wsMsg.message + "\n"
             if (wsMsg.message == "reconnect") {
                 webSocket.close(4900, "reconnecting")
-                setTimeout(
-                    () => openWSConnection(protocol, hostname, port, endpoint),
-                    10
-                )
+                openWSConnection(protocol, hostname, port, endpoint)
             }
         };
     } catch (exception) {
@@ -77,3 +76,11 @@ function onSendClick() {
     webSocket.send(msg);
     document.getElementById("incomingMsgOutput").value += "sent: " + msg + "\n";
 }
+
+function echoLoop() {
+    setTimeout(() => {
+        if (echo_loop && webSocket != null && webSocket.readyState == WebSocket.OPEN) webSocket.send("echo");
+        echoLoop();
+    }, 100)
+}
+echoLoop();

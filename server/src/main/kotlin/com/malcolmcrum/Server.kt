@@ -6,6 +6,8 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage
 import org.eclipse.jetty.websocket.api.annotations.WebSocket
 import spark.Spark
+import java.time.Instant
+import java.time.ZoneId
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -47,7 +49,9 @@ class WebSocketHandler {
     @OnWebSocketMessage
     fun message(session: Session, message: String) {
         println("Got: $message") // Print message
-        session.remote.sendString(toJson(message)) // and send it back
+        val response = toJson(message)
+        println(response)
+        session.remote.sendString(response) // and send it back
     }
 
     fun shutDown() {
@@ -57,6 +61,7 @@ class WebSocketHandler {
     }
 
     fun toJson(message: String): String {
-        return """{"message": "$message", "server": "$serverId"}"""
+        val time = Instant.now().atZone(ZoneId.systemDefault()).toLocalTime().toString()
+        return """{"message": "$message", "time": "$time", "server": "$serverId"}"""
     }
 }
