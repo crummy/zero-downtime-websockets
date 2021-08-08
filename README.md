@@ -40,11 +40,16 @@ event but no actual connection errors occur
    their new connection is made to the second server.
 6. We tell nginx to reload
 
-## Open questions
+## Notes
 
-Briefly, two instances of the server are running, both identified with the same
-hostname. Nginx always seems to choose the new one. Why the new and not the old?
-Or why not both, as the Tines blog post suggests? Perhaps a different nginx config?
+There is a brief moment where only the new server is active, but Nginx does not
+realise it yet. Normally with two servers active, Nginx by default alternates
+requests between the two, but in this case requests to the old server (which no
+long exists) will time out - and when that does, Nginx will re-send the request
+to the new server, which will succeed and Nginx will mark the old as down.
+
+This means, in a worst case scenario, some requests will take 2s extra (the
+timeout is configured in nginx.conf) than they normally would.
 
 ## Credit
 
