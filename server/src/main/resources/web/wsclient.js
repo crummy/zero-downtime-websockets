@@ -6,7 +6,9 @@ var ws_hostname = null;
 var ws_port = null;
 var ws_endpoint = null;
 var echo_loop = false;
-document.getElementById("echo_loop").onclick = () => echo_loop = !echo_loop
+window.onload = () => {
+    document.getElementById("echo_loop").onclick = () => echo_loop = !echo_loop
+}
 
 /**
  * Event handler for clicking on button "Connect"
