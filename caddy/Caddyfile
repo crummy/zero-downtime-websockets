@@ -1,0 +1,10 @@
+{
+    auto_https off
+}
+
+:80 {
+    reverse_proxy {
+        to http://server:4567
+        lb_try_duration 5s
+    }
+}

@@ -3,7 +3,7 @@ services:
     build: ./server
     expose:
       - 4567
-  nginx:
-    build: ./nginx
+  caddy:
+    build: ./caddy
     ports:
       - "80:80"
